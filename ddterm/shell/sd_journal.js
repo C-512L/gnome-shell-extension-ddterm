@@ -19,7 +19,9 @@
 
 import GLib from 'gi://GLib';
 import Gio from 'gi://Gio';
-
+// BEGIN ESM
+import Gi from 'gi';
+// END ESM
 /* We only care about Linux here, because otherwise it won't be systemd */
 const SOL_SOCKET = 1;
 const SO_SNDBUF = 7;
@@ -75,6 +77,13 @@ export function sd_journal_stream_fd(identifier, priority = LOG_INFO, level_pref
     }
 
     try {
+        // BEGIN ESM
+        if (GLib.check_version(2, 81, 0) === null) {
+            const GLibUnix = Gi.require('GLibUnix', '2.0');
+            GLibUnix.set_fd_nonblocking(fd, false);
+            return fd;
+        }
+        // END ESM
         GLib.unix_set_fd_nonblocking(fd, false);
         return fd;
     } catch (ex) {
